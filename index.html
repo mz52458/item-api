@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.1.min.js"></script>
+    <!-- 引入echart.js 实现数据前端数据可视化-->
+    <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+    <title>股票api</title>
+    <style>
+        * {
+            padding: 0;
+        }
+
+        #stock-title {
+            width: 100%;
+            height: 35px;
+            text-align: center;
+            font-size: 25px;
+            padding: 5px;
+        }
+
+        #table {
+            vertical-align: top;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        tr td {
+            width: 200px;
+            border: 1px solid gray;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div>
+        <div id="stock-title"><B>Stock Api</B></div>
+        <div>
+            <table id="table">
+                <tr>
+                    <td>股票代码</td>
+                    <td>
+                        <input type="text" id="stc" value="sh601006">
+                        <input type="button" value="提交股票代码" onclick="Start()">
+                    </td>
+                </tr>
+                <tr>
+                    <td>股票名称</td>
+                    <td>
+                        <input type="text" class="get_stc">
+                    </td>
+                </tr>
+                <tr>
+                    <td>今日开盘价</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>昨日收盘价</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>当前价格</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>今日最高价</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>今日最低价</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>竞买价</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>竞卖价</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>成交股票数</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>成交金额</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>日期</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+                <tr>
+                    <td>时间</td>
+                    <td> <input type="text" class="get_stc"></td>
+                </tr>
+            </table>
+        </div>
+        <!-- 为WChart设置一个具备(宽高得Dom)-->
+        <div id="view" style="width: 100%;height: 350px"></div>
+    </div>
+    <script>
+        function Start() {
+            var stc = document.getElementById("stc");
+            var obj = document.getElementsByClassName("get_stc");
+            $.ajax({
+                //请求地址
+                url: 'http://hq.sinajs.cn/list=' + stc.value,
+                dataType: "script",//用json会出现跨域问题
+                type: "get",
+                async: false,
+                cache: "true",//解决syntaxError错误
+
+                //请求成功
+                success: function (result, status) {
+                    console.log("到这里了");
+                    //console.log(stc.value);
+                    console.log(status);
+
+                    //eval()函数将对应的字符串解析成JS代码
+                    var s = eval('hq_str_' + stc.value);
+                    //将得到的数据用"，"分割开来
+                    var elements = s.split(',');
+                    console.log(elements);
+                    //将得到得数据放入表格
+                    obj[0].value = elements[0];
+                    obj[1].value = elements[1];
+                    obj[2].value = elements[2];
+                    obj[3].value = elements[3];
+                    obj[4].value = elements[4];
+                    obj[5].value = elements[5];
+                    obj[6].value = elements[6];
+                    obj[7].value = elements[7];
+                    obj[8].value = elements[8];
+                    obj[9].value = elements[9];
+                    obj[10].value = elements[30];
+                    obj[11].value = elements[31];
+                }
+
+            });
+            data = [];
+            date = [];
+            function Data() {
+                $.ajax({
+                    //请求地址
+                    url: 'http://hq.sinajs.cn/list=' + stc.value,
+                    dataType: "script",
+                    type: "get",
+                    async: false,
+                    cache: "true",
+
+                    //请求成功
+                    success: function (status) {
+                        console.log(status);
+                        var s = eval('hq_str_' + stc.value);
+                        var elements = s.split(',');
+                        console.log(elements);
+                        //用parseFloat()函数解析字符串
+                        data.push(parseFloat(elements[3]));
+                        // date.push(parseFloat(elements[31]));得到的只是小时数
+                        date.push(elements[31]);
+                        console.log(data);
+                        console.log(date);
+                        if (data.length > 12) {
+                            //shift() 方法用于把数组的第一个元素从其中删除，并返回第一个元素的值
+                            data.shift();
+                            date.shift();
+
+                        }
+                        // console.log("哈哈哈哈哈");
+                        // console.log(data);
+                        // console.log(date);
+                        // setOption方法生成形状图
+                        view.setOption({
+                            xAxis: {
+                                data: date,
+                            },
+                            yAxis: {
+
+                            },
+                            series: [{
+                                type: 'line',
+                                data: data,
+                            }]
+                        })
+                    },
+                    //请求失败，包含具体的错误信息
+                    error: function (e) {
+                        console.log(e.status);
+                        console.log(e.responseText);
+                    }
+                });
+            };
+            var view = echarts.init(document.getElementById("view"))
+            option = {
+                title: {//标题
+                    text: '价格折线图',
+                    left: 'center',
+                    show: true,
+                },
+                legend: {//图标
+                    top: '25',
+                    show: true,
+                    data: ['当前价格'],
+                },
+                grid: {//布局
+                    show: true,
+                    backgroundColor: 'transparent',
+
+                },
+                xAxis: {//x轴
+                    name: "时间",
+                    type: 'category',
+                    nameLocation: "end",//坐标轴显示位置
+                    data: date,
+                },
+                yAxis: {//y轴
+                    name: '价格',
+                    type: 'value',
+                    nameLocation: 'end',
+                    boundaryGap: ['0%', '90%'],
+                    min: function (value) {
+                        return value.min - 0.003;
+                    },
+                    max: function (value) {
+                        return value.max + 0.003;
+                    },
+
+                },
+                tooltip: {//图标悬停得提示内容
+                    //show:true,
+                    trigger: 'axis',
+                },
+                series: [{//ָ指定图标类型
+                    name: '当前价格',
+                    type: 'line',
+                    label: {
+                        normal: {
+                            show: true,
+                        }
+                    },
+                    data: data,
+                }]
+            };
+            // setOption方法生成形状图
+            view.setOption(option);
+            //setInterval() 方法可按照指定的周期（以毫秒计）来调用函数 每隔5秒调用一次函数
+            setInterval(Data, 5000);
+
+        }
+    </script>
+
+</body>
+
+</html>
